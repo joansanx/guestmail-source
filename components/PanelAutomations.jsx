@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { CakeSlice, CalendarClock, HeartHandshake, Loader2, LogOut, Pencil, TriangleAlert } from "lucide-react";
-import { editAutomation, switchAutomation } from "@/app/(app)/automations/actions";
+import { editHotelAutomation, switchHotelAutomation } from "@/app/(app)/automations/actions";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/lib/toast";
@@ -41,7 +41,7 @@ function CardAutomation({ newsletterId, automation, stagger }) {
 
 	function toggle(enabled) {
 		startSaving(async () => {
-			const result = await switchAutomation(newsletterId, state.kind, enabled);
+			const result = await switchHotelAutomation(newsletterId, state.kind, enabled);
 			if (result?.error) return void toast.error(result.error);
 			setState(result);
 			toast.success(enabled ? `${state.label} is on` : `${state.label} is off`);
@@ -50,7 +50,7 @@ function CardAutomation({ newsletterId, automation, stagger }) {
 
 	function edit() {
 		startSaving(async () => {
-			const result = await editAutomation(newsletterId, state.kind);
+			const result = await editHotelAutomation(newsletterId, state.kind);
 			if (result?.error) toast.error(result.error);
 		});
 	}

@@ -40,6 +40,9 @@ const campaignSchema = new mongoose.Schema(
 			kind: { type: String, enum: ["pre_arrival", "post_stay", "birthday", "win_back"] },
 			enabled: { type: Boolean },
 			problem: { type: String },
+			// guestmail: or an email step of an automation (models/Automation.js), which goes to whoever its path brought there.
+			automationId: { type: mongoose.Schema.Types.ObjectId, ref: "Automation" },
+			stepId: { type: String },
 		},
 		// Who wrote it (models/Author.js). Issues from before authors have none and go out as they did.
 		authorId: { type: mongoose.Schema.Types.ObjectId, ref: "Author" },

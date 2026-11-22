@@ -1,4 +1,5 @@
 import { announceTelegram } from "@/lib/alerts";
+import { runDueAutomations } from "@/lib/automation-runs";
 import { runAutomations } from "@/lib/automations";
 import { reconcileBillingPauses } from "@/lib/billing-pause";
 import { withCronSecret } from "@/lib/cron";
@@ -13,9 +14,9 @@ export const maxDuration = 60;
 // Every hour: PostShiba's word on whether GuestMail can send, Telegram's first message once it's set up, the summary
 // emails due this hour in their owners' timezones, the daily look at verified sending domains' DNS records, the
 // imports nobody looked at since they stalled, blocked accounts' billing, plans blocked too long included, and guestmail's
-// automatic emails (lib/automations.js).
+// automatic emails (lib/automations.js), and the automations' waits that ended (lib/automation-runs.js).
 export const GET = withCronSecret(async () => {
-	const [postshiba, telegram, summaries, domains, imports, billing, automations] = await Promise.all([
+	const [postshiba, telegram, summaries, domains, imports, billing, automations, automationRuns] = await Promise.all([
 		checkPostshibaStatus(),
 		announceTelegram(),
 		queueDueSummaries(),
@@ -23,7 +24,8 @@ export const GET = withCronSecret(async () => {
 		mendStalledImports(),
 		reconcileBillingPauses(),
 		runAutomations().catch((error) => ({ error: error.message })),
+		runDueAutomations().catch((error) => ({ error: error.message })),
 	]);
-	console.info(`[hourly] ${JSON.stringify({ postshiba, telegram, summaries, domains, imports, billing, automations })}`);
-	return { postshiba, telegram, summaries, domains, imports, billing, automations };
+	console.info(`[hourly] ${JSON.stringify({ postshiba, telegram, summaries, domains, imports, billing, automations, automationRuns })}`);
+	return { postshiba, telegram, summaries, domains, imports, billing, automations, automationRuns };
 });

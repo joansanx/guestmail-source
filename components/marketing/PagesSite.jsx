@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { PROSE } from "@/components/ArticleHelp";
 import ArticleContent from "@/components/marketing/ArticleContent";
 import ScriptJsonLd from "@/components/ScriptJsonLd";
+import { FEATURE_VISUALS } from "@/components/marketing/DemoLanding";
 import {
 	SectionAgents,
+	SectionClosing,
 	SectionDemo,
 	SectionFaq,
 	SectionFeatures,
@@ -14,6 +16,7 @@ import {
 } from "@/components/marketing/SectionsLanding";
 import { isCloud } from "@/lib/config";
 import { getPage, getPost, listPosts } from "@/lib/marketing/content";
+import { DEMO_TABS } from "@/lib/marketing/landing-demo";
 import { formatDay, getContentMetadata, getStructuredData, readPage, readPost, readSections, toHtml } from "@/lib/marketing/content-render";
 import { BLOG_SLUG, LEGAL_SLUGS, STRINGS, getFeedPath, getPagePath } from "@/lib/marketing/site-pages";
 import { cn } from "@/lib/utils";
@@ -29,26 +32,38 @@ export function getSiteMetadata(lang, slug) {
 	return getContentMetadata(getPage(lang, slug));
 }
 
-// The landing page reads its file as a lead and a line about the price, then three sections in this order: what
-// GuestMail gives (an h3 and a paragraph each), agents (a paragraph, the tools as a list, the links on), and the plans
-// (a paragraph, the list of what every plan has). A file in another shape stops the build here.
+// The landing page reads its file as a lead and a line about the price, then six sections in this order: the demo (a
+// paragraph, then an h3 and a paragraph per tab, in DEMO_TABS' order), what GuestMail gives (an h3 and a paragraph per
+// card, in FEATURE_VISUALS' order), agents (a paragraph, a list of an assistant doing one thing each, the paragraphs
+// on), the plans (a paragraph, the list of what every plan has) and the last call (its paragraphs). A file in another
+// shape stops the build here.
 export function PageLanding({ lang }) {
 	requireCloud();
 	const doc = readPage(lang, "home");
 	const strings = STRINGS[lang];
-	const [intro, features, agents, pricing, ...more] = readSections(doc);
-	if (!pricing || more.length > 0 || intro.paragraphs.length !== 2 || features.items.length === 0 || agents.list.length === 0 || pricing.list.length === 0) {
-		throw new Error(`content/site/${lang}/home.md isn't in the shape the landing page reads (components/marketing/PagesSite.jsx)`);
-	}
+	const [intro, demo, features, agents, pricing, closing, ...more] = readSections(doc);
+	const isShaped =
+		closing &&
+		more.length === 0 &&
+		intro.paragraphs.length === 2 &&
+		demo.paragraphs.length === 1 &&
+		demo.items.length === DEMO_TABS.length &&
+		features.items.length === FEATURE_VISUALS.length &&
+		agents.list.length > 0 &&
+		pricing.list.length > 0 &&
+		closing.paragraphs.length > 0;
+	if (!isShaped) throw new Error(`content/site/${lang}/home.md isn't in the shape the landing page reads (components/marketing/PagesSite.jsx)`);
 	const [lead, price] = intro.paragraphs;
+	const pricingHref = getPagePath(lang, "pricing");
 	return (
 		<main lang={lang} className="flex flex-col gap-20 py-14 sm:gap-24 sm:py-20">
-			<SectionHero title={doc.title} lead={lead} price={price} strings={strings} pricingHref={getPagePath(lang, "pricing")} />
-			<SectionDemo strings={strings} />
-			<SectionFeatures section={features} />
+			<SectionHero title={doc.title} lead={lead} price={price} strings={strings} pricingHref={pricingHref} />
+			<SectionDemo section={demo} strings={strings} lang={lang} />
+			<SectionFeatures section={features} strings={strings} lang={lang} />
 			<SectionAgents section={agents} />
 			<SectionPricing section={pricing} strings={strings} lang={lang} />
 			<SectionFaq faq={doc.faq} strings={strings} />
+			<SectionClosing section={closing} strings={strings} pricingHref={pricingHref} />
 			<ScriptJsonLd data={getStructuredData(doc)} />
 		</main>
 	);

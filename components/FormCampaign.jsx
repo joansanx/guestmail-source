@@ -495,7 +495,9 @@ export default function FormCampaign({
 		);
 	}
 
-	const title = <TitleCampaign title={values.subject} newsletter={newsletter} status={campaign.status} />;
+	// guestmail: an automation's email goes back to its automation.
+	const backHref = campaign.automation?.automationId ? `/automations/${campaign.automation.automationId}` : "/campaigns";
+	const title = <TitleCampaign title={values.subject} newsletter={newsletter} status={campaign.status} backHref={backHref} />;
 	const menu = (
 		<MenuMore
 			isWorking={isWorking}
@@ -711,11 +713,11 @@ export default function FormCampaign({
 	);
 }
 
-function TitleCampaign({ title, newsletter, status }) {
+function TitleCampaign({ title, newsletter, status, backHref }) {
 	return (
 		<div className="flex min-w-0 flex-1 items-center gap-2">
 			<Link
-				href="/campaigns"
+				href={backHref}
 				aria-label="Back"
 				className="-ml-2 grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
 			>

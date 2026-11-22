@@ -91,6 +91,8 @@ export default async function CampaignPage({ params, searchParams }) {
 		return (
 			<CampaignReport
 				role={view.role}
+				// guestmail: an automation's email goes back to its automation.
+				backHref={campaign.automation?.automationId ? `/automations/${campaign.automation.automationId}` : undefined}
 				campaign={serialize(campaign)}
 				newsletter={serialize(newsletter)}
 				contactFields={getFieldOptions(account)}

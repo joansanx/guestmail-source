@@ -20,6 +20,7 @@ import AvatarContact from "@/components/AvatarContact";
 import AvatarNewsletter from "@/components/AvatarNewsletter";
 import BadgeStatus from "@/components/BadgeStatus";
 import ButtonAddField from "@/components/ButtonAddField";
+import ButtonAddToAutomation from "@/components/ButtonAddToAutomation";
 import ButtonCopy from "@/components/ButtonCopy";
 import ButtonEditContact from "@/components/ButtonEditContact";
 import ButtonEditTags from "@/components/ButtonEditTags";
@@ -39,6 +40,7 @@ import TabsPage, { PanelTab } from "@/components/TabsPage";
 import TextEmpty from "@/components/TextEmpty";
 import { Button } from "@/components/ui/button";
 import { scoped } from "@/lib/account-scope";
+import { listContactAutomations } from "@/lib/automation-runs";
 import { countContactEmails, listContactEmails } from "@/lib/contact-emails";
 import { MAX_CONTACT_FIELDS, contactFieldValues } from "@/lib/contact-fields";
 import { getContactHistory } from "@/lib/contact-history";
@@ -53,6 +55,7 @@ import { PROVIDER_DOMAINS, PROVIDER_LABELS, mailboxProvider } from "@/lib/provid
 import { rootDomain } from "@/lib/root-domain";
 import { findContactSegments, listLiveSegments } from "@/lib/segment-queries";
 import { findInNewsletters, getSelectedNewsletter, openNewsletter } from "@/lib/selected-newsletter";
+import { hasRole } from "@/lib/team-rules";
 import { TIME_ZONE_COOKIE, resolveTimeZone } from "@/lib/time-zone";
 import { cn } from "@/lib/utils";
 import { isObjectIdString } from "@/lib/validation";
@@ -80,7 +83,7 @@ export default async function ContactPage({ params, searchParams }) {
 	const timeZone = resolveTimeZone(cookieStore.get(TIME_ZONE_COOKIE)?.value);
 	const limit = Math.min(MAX_EMAILS, Math.max(EMAILS_STEP, Number.parseInt(query.emails, 10) || EMAILS_STEP));
 	const fields = (account.contactFields ?? []).map(({ key, label, type }) => ({ key, label, type }));
-	const [{ emails, nextCursor }, counts, tags, segments, others, contactImport] = await Promise.all([
+	const [{ emails, nextCursor }, counts, tags, segments, others, contactImport, automations] = await Promise.all([
 		listContactEmails(account, contact, { limit }),
 		countContactEmails(account, contact),
 		listContactTags(account, contact.newsletterId),
@@ -89,7 +92,10 @@ export default async function ContactPage({ params, searchParams }) {
 			.select({ newsletterId: 1, status: 1 })
 			.lean(),
 		contact.importId ? ContactImport.findOne(scoped(account, { _id: contact.importId })).select({ fileName: 1 }).lean() : null,
+		// guestmail: the automations they're on or went through (lib/automation-runs.js).
+		listContactAutomations(account, contact),
 	]);
+	const canAddToAutomation = hasRole(view.role, "admin") && contact.status === "active" && automations.available.length > 0;
 
 	const name = contact.firstName || null;
 	const inbox = getInbox(contact.email);
@@ -212,6 +218,26 @@ export default async function ContactPage({ params, searchParams }) {
 							</dl>
 						</section>
 						{contact.guest?.visits?.length > 0 && <SectionVisits visits={contact.guest.visits} />}
+
+						{(automations.runs.length > 0 || canAddToAutomation) && (
+							<CardSettings
+								title="Automations"
+								action={canAddToAutomation && <ButtonAddToAutomation contactId={id} automations={automations.available} />}
+							>
+								{automations.runs.length > 0 ? (
+									automations.runs.map((run) => (
+										<RowLink key={run.automationId} href={`/automations/${run.automationId}`}>
+											<span data-no-translate className="truncate">
+												{run.name}
+											</span>
+											<span className="shrink-0 text-muted-foreground">{run.where.charAt(0).toUpperCase() + run.where.slice(1)}</span>
+										</RowLink>
+									))
+								) : (
+									<p className="px-4 py-3 text-sm text-muted-foreground">In none of your automations</p>
+								)}
+							</CardSettings>
+						)}
 
 						{(segments.hasAny || otherNewsletters.length > 0) && (
 							<div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
@@ -718,7 +744,7 @@ function SectionVisits({ visits }) {
 								visit.channel,
 								visit.roomType,
 								visit.adults !== undefined || visit.children !== undefined
-									? [visit.adults && `${formatNumber(visit.adults)} adults`, visit.children && `${formatNumber(visit.children)} children`].filter(Boolean).join(", ")
+									? [visit.adults && `${formatNumber(visit.adults)} ${visit.adults === 1 ? "adult" : "adults"}`, visit.children && `${formatNumber(visit.children)} ${visit.children === 1 ? "child" : "children"}`].filter(Boolean).join(", ")
 									: visit.partySize
 										? `${formatNumber(visit.partySize)} guests`
 										: null,

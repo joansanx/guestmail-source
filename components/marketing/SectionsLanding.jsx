@@ -1,18 +1,25 @@
 import Link from "next/link";
-import { ArrowRight, Check, ChevronDown, Star } from "lucide-react";
+import { ArrowRight, Check, ChevronDown } from "lucide-react";
+import { DEMO_ICONS, DEMO_PANELS, FEATURE_VISUALS } from "@/components/marketing/DemoLanding";
+import TabsPage, { PanelTab } from "@/components/TabsPage";
 import { Button } from "@/components/ui/button";
+import { getAppUrl } from "@/lib/config";
+import { getMcpClients, getMcpConnectors } from "@/lib/docs/mcp-clients";
+import { DEMO_TABS, getDemo } from "@/lib/marketing/landing-demo";
 import { PLANS, getPrice } from "@/lib/plans";
 
 // guestmail: the sections of the public site (the landing and the pricing page, in each language). Their words come
 // from the page's Markdown file, as lib/marketing/content-render.js reads its sections; strings are the few words of
-// the markup itself (lib/marketing/site-pages.js). Server components only: no script ships for them, so the pages load
-// as plain HTML and CSS.
+// the markup itself (lib/marketing/site-pages.js). Server components: the only script they ship is the demo's tabs
+// (components/TabsPage.jsx), and every tab's panel is in the HTML.
 const WIDTH = "mx-auto w-full max-w-(--site-width) px-4 sm:px-6 lg:px-8";
 const HEADING = "font-display text-3xl leading-[1.1] font-[480] tracking-[-0.02em] text-balance sm:text-4xl";
 const CARD = "rounded-xl bg-card shadow-border";
 const TEXT = "max-w-2xl text-[15px] leading-6 text-pretty text-muted-foreground";
 const LINKS = "[&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground";
-const CODE = "[&_code]:mr-1.5 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[13px] [&_code]:text-foreground";
+const CODE = "[&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[13px] [&_code]:text-foreground";
+// A feature's link to its help article, on a line of its own under its words.
+const HELP_LINK = "[&_a]:mt-2 [&_a]:block [&_a]:w-fit [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4";
 
 // A paragraph or a list item of a content file, already HTML: the repository's own files, never a visitor's words.
 function Html({ as: Tag = "p", html, className }) {
@@ -48,96 +55,96 @@ export function SectionHero({ title, lead, price, strings, pricingHref }) {
 	);
 }
 
-// What the product looks like, drawn with a venue that doesn't exist: three of its screens, side by side on a
-// computer and one under the other on a phone. The screens stay in English in every language, as the dashboard is.
-export function SectionDemo({ strings }) {
-	const { demo } = strings;
+// The demo: a tab for each h3 of the section, its paragraph above the screen it opens (components/marketing/DemoLanding.jsx),
+// every panel in the server's HTML. Then the section's own paragraph, that an agent can do all of it, and the AI
+// assistants the docs set up (/docs/mcp), by name.
+export function SectionDemo({ section, strings, lang }) {
+	const demo = getDemo(lang);
+	const tabs = section.items.map(({ title }, index) => ({ value: DEMO_TABS[index], label: title, icon: DEMO_ICONS[DEMO_TABS[index]] }));
+	const clients = [...getMcpConnectors(getAppUrl()), ...getMcpClients(getAppUrl())].map(({ name }) => name);
 	return (
-		<section aria-label={demo.label} className={`${WIDTH} flex flex-col gap-3`}>
-			<p className="text-xs text-muted-foreground">{demo.note}</p>
-			<div className="grid gap-4 lg:grid-cols-3">
-			<figure className={`${CARD} flex flex-col gap-3 p-5`}>
-				<figcaption className="text-xs font-medium text-muted-foreground">{demo.reputation}</figcaption>
-				<p className="flex items-center gap-2 text-sm">
-					<Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
-					<span className="font-semibold tabular-nums">4.7</span>
-					<span className="text-muted-foreground">1,234 reviews on Google Maps</span>
-				</p>
-				<blockquote className="border-l-2 border-border pl-3 text-sm leading-relaxed text-pretty text-muted-foreground">
-					“Breakfast on the terrace was the best part of our week, and the staff knew our names from the first morning.”
-					<span className="mt-1.5 block text-xs text-foreground">Ana G. · Recommended · 5 stars · mentions breakfast and staff</span>
-				</blockquote>
-				<span className="mt-auto inline-flex h-9 items-center justify-center rounded-lg bg-foreground px-3 text-sm font-medium text-background">
-					Draft a campaign with 3
-				</span>
-			</figure>
-			<figure className={`${CARD} flex flex-col gap-3 p-5`}>
-				<figcaption className="text-xs font-medium text-muted-foreground">{demo.popup}</figcaption>
-				<p className="text-lg font-semibold tracking-tight">10% off your next stay</p>
-				<span className="flex gap-2">
-					<span className="flex h-10 min-w-0 flex-1 items-center rounded-lg border border-border px-3 text-sm text-muted-foreground">you@example.com</span>
-					<span className="inline-flex h-10 items-center rounded-lg bg-foreground px-4 text-sm font-medium text-background">Subscribe</span>
-				</span>
-				<span className="mt-auto rounded-lg border border-dashed border-border px-3.5 py-3 text-sm">
-					10% off your next stay
-					<span className="mt-1 block font-mono text-lg font-semibold tracking-wider">GUEST10-7K2P9Q</span>
-				</span>
-			</figure>
-			<figure className={`${CARD} flex flex-col gap-3 p-5`}>
-				<figcaption className="text-xs font-medium text-muted-foreground">{demo.guest}</figcaption>
-				<p className="flex flex-col text-sm">
-					<span className="font-medium">ana@example.com</span>
-					<span className="text-xs text-muted-foreground">Ana · Stays and reservations 2</span>
-				</p>
-				<ul className="flex flex-col divide-y divide-border/60 text-sm">
-					{[
-						{ dates: "Sep 1 to Sep 4, 2026", detail: "Stay · direct · Double" },
-						{ dates: "Mar 12 to Mar 14, 2026", detail: "Stay · booking.com · Double" },
-					].map((visit) => (
-						<li key={visit.dates} className="flex flex-col gap-0.5 py-2.5">
-							<span className="font-medium tabular-nums">{visit.dates}</span>
-							<span className="text-xs text-muted-foreground">{visit.detail}</span>
+		<section aria-labelledby="demo" className={`${WIDTH} flex flex-col gap-4`}>
+			<h2 id="demo" className="sr-only">
+				{section.title}
+			</h2>
+			<TabsPage tabs={tabs} className="gap-5">
+				{section.items.map(({ title, html }, index) => {
+					const Panel = DEMO_PANELS[DEMO_TABS[index]];
+					return (
+						<PanelTab key={title} value={DEMO_TABS[index]} className="flex flex-col gap-4">
+							<Html html={html} className={`${TEXT} ${LINKS} ${CODE} sm:min-h-18`} />
+							<Panel demo={demo} />
+						</PanelTab>
+					);
+				})}
+			</TabsPage>
+			<p className="text-xs text-muted-foreground">{strings.demo.note}</p>
+			<div className="mt-4 flex flex-col gap-3">
+				<Html html={section.paragraphs[0]} className={`text-lg leading-7 font-medium text-pretty ${LINKS}`} />
+				<ul className="flex flex-wrap gap-2">
+					{clients.map((name) => (
+						<li key={name} className="rounded-full bg-card px-3 py-1 text-sm text-muted-foreground shadow-border">
+							{name}
 						</li>
 					))}
 				</ul>
-				<span className="mt-auto text-xs text-muted-foreground">Segment: last visit in the last 90 days</span>
-			</figure>
 			</div>
 		</section>
 	);
 }
 
-export function SectionFeatures({ section }) {
+// A card per h3, with its small screen on top, in the section's order (FEATURE_VISUALS).
+export function SectionFeatures({ section, strings, lang }) {
+	const demo = getDemo(lang);
 	return (
 		<section className={`${WIDTH} flex flex-col gap-8`}>
-			<h2 className={HEADING}>{section.title}</h2>
-			<ul className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
-				{section.items.map(({ title, html }) => (
-					<li key={title} className="flex flex-col gap-1.5">
-						<h3 className="font-semibold tracking-tight">{title}</h3>
-						<Html html={html} className={`text-[15px] leading-6 text-pretty text-muted-foreground ${LINKS}`} />
-					</li>
-				))}
+			<div className="flex flex-col gap-2">
+				<h2 className={HEADING}>{section.title}</h2>
+				<p className="text-xs text-muted-foreground">{strings.demo.note}</p>
+			</div>
+			<ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				{section.items.map(({ title, html }, index) => {
+					const Visual = FEATURE_VISUALS[index];
+					return (
+						<li key={title} className={`${CARD} flex min-w-0 flex-col gap-4 p-3`}>
+							<Visual demo={demo} />
+							<div className="flex flex-col gap-1.5 px-1 pb-1">
+								<h3 className="font-semibold tracking-tight">{title}</h3>
+								<Html html={html} className={`text-sm leading-6 text-pretty text-muted-foreground ${HELP_LINK}`} />
+							</div>
+						</li>
+					);
+				})}
 			</ul>
 		</section>
 	);
 }
 
-// Its first paragraph, the tools as a list, then the paragraphs that lead on: to the agents' page and to the docs.
+// On a dark band: its first paragraph, then a tile per item, each an assistant doing one thing with the tool it uses
+// (the item's bold name, its words, its code), then the paragraphs that lead on.
 export function SectionAgents({ section }) {
 	const [text, ...more] = section.paragraphs;
 	return (
-		<section className={`${WIDTH} flex flex-col gap-6`}>
-			<h2 className={HEADING}>{section.title}</h2>
-			<Html html={text} className={`${TEXT} ${LINKS}`} />
-			<ul className={`${CARD} divide-y divide-border/60`}>
-				{section.list.map((html) => (
-					<Html key={html} as="li" html={html} className={`px-4 py-3 text-sm text-muted-foreground ${CODE}`} />
+		<section className={WIDTH}>
+			<div className="flex flex-col gap-8 rounded-2xl bg-foreground p-6 text-background sm:p-10">
+				<div className="flex max-w-2xl flex-col gap-4">
+					<h2 className={HEADING}>{section.title}</h2>
+					<Html html={text} className="text-[15px] leading-6 text-pretty text-background/70" />
+				</div>
+				<ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					{section.list.map((html) => (
+						<Html
+							key={html}
+							as="li"
+							html={html}
+							className="flex flex-col gap-2 rounded-xl bg-background/[0.06] p-4 text-[15px] leading-6 ring-1 ring-background/10 [&_code]:mt-auto [&_code]:w-fit [&_code]:rounded-md [&_code]:bg-background/10 [&_code]:px-2 [&_code]:py-1 [&_code]:font-mono [&_code]:text-[13px] [&_strong]:text-xs [&_strong]:font-medium [&_strong]:text-background/60"
+						/>
+					))}
+				</ul>
+				{more.map((html) => (
+					<Html key={html} html={html} className="max-w-2xl text-sm text-pretty text-background/70 [&_a]:text-background [&_a]:underline [&_a]:underline-offset-4" />
 				))}
-			</ul>
-			{more.map((html) => (
-				<Html key={html} html={html} className={`text-sm text-muted-foreground ${LINKS}`} />
-			))}
+			</div>
 		</section>
 	);
 }
@@ -215,6 +222,19 @@ export function SectionText({ section }) {
 					))}
 				</ul>
 			)}
+		</section>
+	);
+}
+
+// The page's last word: its heading, its paragraph and the way in.
+export function SectionClosing({ section, strings, pricingHref }) {
+	return (
+		<section className={`${WIDTH} flex flex-col items-start gap-5`}>
+			<h2 className={HEADING}>{section.title}</h2>
+			{section.paragraphs.map((html) => (
+				<Html key={html} html={html} className={`${TEXT} ${LINKS}`} />
+			))}
+			<ButtonsStart strings={strings} pricingHref={pricingHref} />
 		</section>
 	);
 }
