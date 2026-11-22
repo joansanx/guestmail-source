@@ -1,0 +1,239 @@
+import mongoose from "mongoose";
+import { accountScoped } from "../lib/account-scope.js";
+import { contentReviewSchema } from "../lib/content-review-schema.js";
+import { SUMMARY_FREQUENCIES } from "../lib/summary.js";
+
+const newsletterSchema = new mongoose.Schema(
+	{
+		name: { type: String, required: true, trim: true },
+		// Unique across accounts: the archive lives at /archive/<slug>.
+		slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+		imageUrl: { type: String, trim: true },
+		fromName: { type: String, trim: true },
+		fromEmail: { type: String, required: true, lowercase: true, trim: true },
+		// Where replies to its emails go while it has no author (lib/sender-rules.js resolveFrom), as set before authors.
+		replyTo: { type: String, lowercase: true, trim: true },
+		// The author its new issues start with, whose address gets the replies to its own emails (lib/authors.js): its
+		// first author until another is picked on its Sender page.
+		defaultAuthorId: { type: mongoose.Schema.Types.ObjectId, ref: "Author" },
+		// Without one, emails print the server's default (lib/postal-address.js), unless the owner saved it empty.
+		postalAddress: { type: String, trim: true },
+		postalAddressCleared: { type: Boolean },
+		archiveEnabled: { type: Boolean, default: false },
+		// Its website domain's host once it's live (lib/website-domains.js). Without one, the archive and the links in its
+		// emails use <slug>.<shared domain>.
+		archiveHost: { type: String, lowercase: true, trim: true },
+		// Its own domain for its website and the links in its emails, as last checked.
+		websiteDomain: {
+			host: { type: String, lowercase: true, trim: true },
+			cnameFound: { type: Boolean },
+			// The TXT record that proves the account controls the host (lib/website-domain-rules.js).
+			txtFound: { type: Boolean },
+			// The TXT records Vercel asks for when the domain is verified for another Vercel team.
+			verification: { type: [{ _id: false, type: { type: String }, name: String, value: String }], default: undefined },
+			// On the app's Vercel project, through the DNS helper.
+			attachedAt: { type: Date },
+			checkedAt: { type: Date },
+			liveAt: { type: Date },
+		},
+		// Hosts its website was live on before. They stay on the app's Vercel project, so the links in the emails sent
+		// then keep working, until the account is purged.
+		pastHosts: { type: [String], default: undefined },
+		// The shared address's sending domain, <slug>.<shared domain>, in the account's tenant at the email
+		// provider, with the DNS records GuestMail published for it on the shared domain (lib/shared-sender.js).
+		sharedSender: {
+			domain: { type: String, lowercase: true, trim: true },
+			provider: { type: String },
+			providerDomainId: { type: String },
+			verified: { type: Boolean },
+			dnsRecordIds: { type: [String], default: undefined },
+			createdAt: { type: Date },
+			checkedAt: { type: Date },
+			verifiedAt: { type: Date },
+		},
+		// The domain it last sent a campaign from, whose warm-up its sends follow (models/SenderDomain.js).
+		sendingDomain: { type: String, lowercase: true, trim: true },
+		description: { type: String, trim: true },
+		socialLinks: [{ type: String, trim: true }],
+		// The archive's author page; the author's name is fromName.
+		author: {
+			bio: { type: String, trim: true },
+			imageUrl: { type: String, trim: true },
+		},
+		// The analytics tools its website loads, each by its ID alone (lib/website-analytics.js).
+		analytics: {
+			googleAnalytics: { type: String, trim: true },
+			googleTagManager: { type: String, trim: true },
+			metaPixel: { type: String, trim: true },
+		},
+		// Its own HTML for the head of its website's pages, only ever sent on its own domain (lib/website-code.js).
+		customCode: { type: String },
+		// New signups get an email with a link and only join once they click it (confirmed opt-in).
+		requireConfirmation: { type: Boolean, default: false },
+		// Checked when an issue is sent (lib/cleanup.js). Empty numbers use the newsletter's defaults.
+		cleanup: {
+			enabled: { type: Boolean, default: false },
+			issues: { type: Number, min: 1 },
+			days: { type: Number, min: 1 },
+		},
+		// Its own emails (lib/newsletter-emails.js), each written in the editor (format rich, in html) or in Markdown, as
+		// they were before it and as the API takes them.
+		welcome: {
+			enabled: { type: Boolean, default: false },
+			subject: { type: String, trim: true },
+			previewText: { type: String, trim: true },
+			format: { type: String, enum: ["markdown", "rich"] },
+			markdown: { type: String },
+			html: { type: String },
+		},
+		// The newsletter's own confirmation email; the built-in one goes out until it has one.
+		confirmation: {
+			subject: { type: String, trim: true },
+			previewText: { type: String, trim: true },
+			format: { type: String, enum: ["markdown", "rich"] },
+			markdown: { type: String },
+			html: { type: String },
+		},
+		// The newsletter's own last-chance email for its list cleanup (lib/last-chance-content.js); the built-in one goes out
+		// until it has one.
+		lastChance: {
+			subject: { type: String, trim: true },
+			previewText: { type: String, trim: true },
+			format: { type: String, enum: ["markdown", "rich"] },
+			markdown: { type: String },
+			html: { type: String },
+		},
+		// The content check of its own welcome, confirmation and last-chance emails (lib/signup-email-review.js), each of the
+		// content it read. Apart from the emails, which a save replaces whole.
+		reviews: {
+			type: new mongoose.Schema(
+				{ welcome: contentReviewSchema, confirmation: contentReviewSchema, lastChance: contentReviewSchema },
+				{ _id: false }
+			),
+			select: false,
+		},
+		// The signup form its owner pastes on their own site (lib/signup-form.js), off until they turn it on. No domains:
+		// any site can hold it.
+		signupForm: {
+			enabled: { type: Boolean, default: false },
+			layout: { type: String },
+			// The card's text above the form: unset follows the newsletter's name and description, empty hides it.
+			headline: { type: String, trim: true },
+			subheadline: { type: String, trim: true },
+			askFirstName: { type: Boolean },
+			buttonText: { type: String, trim: true },
+			placeholder: { type: String, trim: true },
+			allowedDomains: { type: [String], default: undefined },
+			// guestmail: what joining gives, like "10% off your next stay", and its code (lib/offer-code.js).
+			offerText: { type: String, trim: true },
+			offerCode: { type: String, trim: true, uppercase: true },
+			offerUnique: { type: Boolean },
+		},
+		// guestmail: the hotel or restaurant behind the newsletter (lib/actions/reputation.js). placeId is its listing on
+		// Google Maps, the one thing of a place Google lets a server keep; bookingUrl is where its campaigns send guests.
+		venue: {
+			kind: { type: String, enum: ["hotel", "restaurant", "other"] },
+			placeId: { type: String, trim: true },
+			bookingUrl: { type: String, trim: true },
+			// The owner's own website, for a business without a place on Google Maps: the agent reads it for the brief.
+			website: { type: String, trim: true },
+		},
+		// guestmail: who the venue is in law, for the notice under its forms, its privacy page and its emails' footer
+		// (lib/venue-legal.js). The venue is the controller of its subscribers' data and GuestMail its processor.
+		legal: {
+			name: { type: String, trim: true },
+			taxId: { type: String, trim: true },
+			email: { type: String, lowercase: true, trim: true },
+			privacyUrl: { type: String, trim: true },
+		},
+		// guestmail: the universal reservations connector (lib/connector.js). token: the secret in its URL. consentAt: when
+		// the owner confirmed the guests it brings may get their emails. events: the last ones received, without guest data.
+		connector: {
+			token: { type: String },
+			consentAt: { type: Date },
+			lastEventAt: { type: Date },
+			events: [{ at: Date, event: String, ok: Boolean, email: String, reservation: String, error: String, _id: false }],
+		},
+		// guestmail: the content agent (lib/content-agent.js). brief: the owner's context.md, what the agent knows about the
+		// venue and how it writes; Google Maps data is read live at each run, never kept here. language: what it writes in.
+		// lastRoundAt: when it last proposed ideas. nextRoundAt: an owner's "new ideas now".
+		agent: {
+			enabled: { type: Boolean },
+			brief: { type: String, maxlength: 8000 },
+			language: { type: String, enum: ["en", "es"] },
+			lastRoundAt: { type: Date },
+			nextRoundAt: { type: Date },
+			// What the owner asked it to write about, first in every round. firstRoundAt: the round set up at sign-up, before a plan.
+			topics: { type: [String], default: undefined },
+			firstRoundAt: { type: Date },
+		},
+		// guestmail: the autopilot (lib/pilot.js). menu: a restaurant's menu, or what a hotel offers, as the agent read it
+		// from a page or a PDF (never kept) and as its owner corrected it. Nothing is written from it before confirmedAt.
+		// frequency and weekday: when a proposal comes. segmentId: who it goes to, every active contact without one.
+		// missed: the proposals in a row its owner didn't answer.
+		pilot: {
+			enabled: { type: Boolean },
+			frequency: { type: String, enum: ["weekly", "biweekly", "monthly"] },
+			weekday: { type: Number, min: 0, max: 6 },
+			segmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Segment" },
+			missed: { type: Number },
+			menu: {
+				source: { type: String, enum: ["url", "pdf"] },
+				url: { type: String, trim: true },
+				fileName: { type: String, trim: true },
+				readAt: { type: Date },
+				confirmedAt: { type: Date },
+				sections: { type: [{ _id: false, name: String, items: [{ _id: false, name: String, description: String, price: String }] }], default: undefined },
+			},
+		},
+		// Dashboard helpers its owner closed: ownDomain, the step the own-domain helper suggested (lib/sender-rules.js), and
+		// inboxCheck, when the settings card about getting GuestMail's emails in their inbox went (lib/inbox-check.js).
+		dismissedNudges: {
+			ownDomain: { type: String },
+			inboxCheck: { type: Date },
+		},
+		// What GuestMail emails its owner about it, a choice for each kind: summary, how often its summary email comes
+		// (lib/summary.js), weekly while unset.
+		notifications: {
+			summary: { type: String, enum: SUMMARY_FREQUENCIES },
+		},
+		// The last summary email claimed, which a second delivery of its job doesn't send again (lib/summary-send.js).
+		// Apart from notifications, which a save of the settings replaces whole.
+		summarySent: {
+			key: { type: String },
+			at: { type: Date },
+		},
+		// Its get-started panel (lib/get-started.js), closed by its owner or finished: either hides it for good, on every
+		// device. The account's other newsletters keep theirs. themeChosenAt: a theme preset picked, GuestMail's own
+		// included, which does the panel's design step.
+		getStarted: {
+			dismissedAt: { type: Date },
+			finishedAt: { type: Date },
+			themeChosenAt: { type: Date },
+		},
+		// Its look on its website and in its emails (lib/themes.js): a preset, and only what was changed on top of it.
+		// lightColors and darkColors: each mode's palette changes. colors: the mode the preset is made for's, as themes
+		// were saved before they had two; the next save of the theme moves them.
+		theme: {
+			preset: { type: String, trim: true },
+			colors: { background: { type: String }, text: { type: String }, accent: { type: String } },
+			lightColors: { background: { type: String }, text: { type: String }, accent: { type: String } },
+			darkColors: { background: { type: String }, text: { type: String }, accent: { type: String } },
+			fonts: { heading: { type: String }, body: { type: String } },
+			headingWeight: { type: Number },
+			radius: { type: String },
+			shadow: { type: String },
+			spacing: { type: String },
+			emailAlign: { type: String },
+		},
+	},
+	{ timestamps: true }
+);
+
+newsletterSchema.plugin(accountScoped);
+newsletterSchema.index({ accountId: 1, createdAt: 1 });
+// guestmail: the reservations connector finds its newsletter by the token in its URL.
+newsletterSchema.index({ "connector.token": 1 }, { unique: true, partialFilterExpression: { "connector.token": { $type: "string" } } });
+newsletterSchema.index({ archiveHost: 1 }, { unique: true, partialFilterExpression: { archiveHost: { $type: "string" } } });
+
+export default mongoose.models.Newsletter || mongoose.model("Newsletter", newsletterSchema);

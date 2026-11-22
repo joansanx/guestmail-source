@@ -1,0 +1,146 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { ArrowRight, Users } from "lucide-react";
+import ButtonsContacts from "@/components/ButtonsContacts";
+import CardAddContacts from "@/components/CardAddContacts";
+import CardImports from "@/components/CardImports";
+import FilterContacts from "@/components/FilterContacts";
+import HeaderPage from "@/components/HeaderPage";
+import NoticeSegmentSuggestions from "@/components/NoticeSegmentSuggestions";
+import ProviderContactOptions from "@/components/ProviderContactOptions";
+import ProviderContactSelection from "@/components/ProviderContactSelection";
+import StateEmpty from "@/components/StateEmpty";
+import TableContacts, { NavPages } from "@/components/TableContacts";
+import { Skeleton } from "@/components/ui/skeleton";
+import { scoped } from "@/lib/account-scope";
+import { getAppUrl, isCloud } from "@/lib/config";
+import { getFieldOptions } from "@/lib/contact-fields";
+import { LIST_STATUSES, readContactFilters, toFilterQuery, toListQuery } from "@/lib/contact-filters";
+import { CONTACTS_PAGE_SIZE, findContactsPage, listContactSources, listContactTags } from "@/lib/contacts";
+import { getNewsletterHost } from "@/lib/archive-hosts";
+import { getAddContactCurl } from "@/lib/docs/reference";
+import { listImports } from "@/lib/import-jobs";
+import { toNewsletterOption } from "@/lib/newsletters";
+import { getSelectedNewsletter, openNewsletter } from "@/lib/selected-newsletter";
+import { hasRole } from "@/lib/team-rules";
+import { siteExtensions } from "@/lib/site-extensions";
+import { isObjectIdString } from "@/lib/validation";
+import Contact from "@/models/Contact";
+
+export const metadata = { title: "Contacts" };
+
+const NO_PAGE = { contacts: [], counts: {}, totalAll: 0, total: 0 };
+
+// The open newsletter's contacts, with the search and the filters in the address (lib/contact-filters.js). A newsletter
+// in ?newsletter=, from the filter this page had, opens first. ?segment=, the list's segment filter before segments had
+// their pages, goes to the segment's page.
+export default async function ContactsPage({ searchParams }) {
+	const [view, params] = await Promise.all([getSelectedNewsletter(), searchParams]);
+	openNewsletter(view, params.newsletter, "/contacts");
+	const filters = readContactFilters(params, LIST_STATUSES);
+	if (isObjectIdString(params.segment)) redirect(`/contacts/segments/${params.segment}${toFilterQuery(filters)}`);
+	const { account, selected } = view;
+	const newsletterId = selected ? String(selected._id) : null;
+	const page = Math.max(1, Number.parseInt(params.page, 10) || 1);
+	const fields = getFieldOptions(account);
+
+	const [{ contacts, counts, totalAll, total }, tags, sources, imports] = newsletterId
+		? await Promise.all([
+				findContactsPage(account, { newsletterId, page, ...toListQuery(filters) }),
+				listContactTags(account, newsletterId),
+				listContactSources(account, newsletterId),
+				listImports(account, { newsletterId: selected._id, limit: 3 }),
+			])
+		: [NO_PAGE, [], [], []];
+	const pageCount = Math.max(1, Math.ceil(total / CONTACTS_PAGE_SIZE));
+	// totalAll counts within the search and the filters but every status, while the card of an empty list and the export
+	// follow the whole list, which a narrowed page that finds no one counts again.
+	const isNarrowed = Boolean(filters.query || filters.tag || filters.source || filters.signedUpSince || filters.signedUpBefore);
+	const listCount =
+		isNarrowed && newsletterId && totalAll === 0
+			? await Contact.countDocuments(scoped(account, { newsletterId: selected._id }), { limit: 1 })
+			: totalAll;
+	const hasContacts = listCount > 0;
+	const newsletter = selected && toNewsletterOption(selected);
+	const importGuides = isCloud() ? siteExtensions.importGuides : [];
+	const curl = getAddContactCurl(getAppUrl(), selected?.slug);
+	const venue = selected?.venue?.kind ? { kind: selected.venue.kind, host: getNewsletterHost(selected) } : null;
+
+	function hrefFor(target) {
+		return `/contacts${toFilterQuery(filters, { page: target > 1 && target })}`;
+	}
+
+	// Deleting the last page's last contact leaves the page past the end.
+	if (page > pageCount) redirect(hrefFor(pageCount));
+
+	return (
+		<ProviderContactOptions fields={fields} tags={tags}>
+			<HeaderPage title="Contacts">
+				<ButtonsContacts
+					hasContacts={hasContacts}
+					newsletter={newsletter}
+					filters={filters}
+					count={total}
+					curl={curl}
+					importGuides={importGuides}
+				/>
+			</HeaderPage>
+
+			<div className="flex flex-col gap-4">
+				{venue && params.start && <NoticeStart hasContacts={hasContacts} people={venue.kind === "other" ? "customers" : "guests"} />}
+				{newsletterId && <CardImports key={newsletterId} newsletterId={newsletterId} imports={imports} />}
+				{newsletterId && hasContacts && hasRole(view.role, "admin") && (
+					<Suspense fallback={null}>
+						<NoticeSegmentSuggestions account={account} newsletterId={selected._id} />
+					</Suspense>
+				)}
+				{hasContacts && (
+					<Suspense fallback={<Skeleton className="h-9 w-full rounded-lg" />}>
+						<FilterContacts
+							key={newsletterId}
+							statuses={LIST_STATUSES.map((value) => ({ value, count: counts[value] ?? 0 }))}
+							total={totalAll}
+							tags={tags}
+							sources={sources}
+							count={total}
+						/>
+					</Suspense>
+				)}
+
+				{!hasContacts ? (
+					<CardAddContacts newsletter={newsletter} curl={curl} importGuides={importGuides} venue={venue} />
+				) : contacts.length === 0 ? (
+					<StateEmpty icon={Users} title="No contacts match" />
+				) : (
+					<ProviderContactSelection
+						key={`${newsletterId}${toFilterQuery(filters, { page })}`}
+						newsletterId={newsletterId}
+						filters={filters}
+						total={total}
+						counts={counts}
+						contacts={contacts.map(({ _id, status, tags: contactTags }) => ({ id: String(_id), status, tags: contactTags ?? [] }))}
+					>
+						<TableContacts contacts={contacts} fields={fields} />
+						<NavPages page={page} pageCount={pageCount} total={total} hrefFor={hrefFor} />
+					</ProviderContactSelection>
+				)}
+			</div>
+		</ProviderContactOptions>
+	);
+}
+// guestmail: the last step of a venue's sign-up (app/welcome/actions.js), until it moves on to its content agent.
+function NoticeStart({ hasContacts, people }) {
+	return (
+		<div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card px-4 py-3 text-sm shadow-border">
+			<p className="min-w-0 flex-1 basis-64 text-pretty">
+				<span className="font-medium">{hasContacts ? `Your ${people} are in.` : `Last step: bring your ${people} in.`}</span>{" "}
+				{hasContacts ? "Your content agent is writing your first email for them." : "Your first email needs someone to go to. You can also do it later."}
+			</p>
+			<Link href="/agent" className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline">
+				{hasContacts ? "Meet your content agent" : "Skip for now"}
+				<ArrowRight className="size-3.5" aria-hidden="true" />
+			</Link>
+		</div>
+	);
+}
