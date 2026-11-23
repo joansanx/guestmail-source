@@ -12,6 +12,7 @@ import { getArchiveUrls } from "@/lib/archive-hosts";
 import { BOTID_WEBSITE, isBotIdEnabled } from "@/lib/bot-check";
 import { getAppHost, getSharedDomain } from "@/lib/config";
 import { getVenueLanguage } from "@/lib/venue-legal";
+import { getLandingCopy } from "@/lib/landing";
 import { getOwnDomain, getWebsiteAnalytics } from "@/lib/website-analytics";
 
 export default async function ArchiveLayout({ children, params }) {
@@ -31,8 +32,10 @@ export default async function ArchiveLayout({ children, params }) {
 		notice: getSiteNotice(newsletter),
 	};
 
+	const landing = getLandingCopy(newsletter);
+
 	return (
-		<ProviderSubscribe newsletter={pitch} readers={readers}>
+		<ProviderSubscribe newsletter={pitch} readers={readers} labels={landing.labels} form={landing.form}>
 			<StyleTheme theme={newsletter.theme} />
 			{isBotIdEnabled() && <ScriptBotId protect={BOTID_WEBSITE} />}
 			{analytics && <ScriptWebsiteAnalytics analytics={analytics} />}

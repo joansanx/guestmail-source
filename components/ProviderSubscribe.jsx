@@ -11,7 +11,8 @@ export function useSubscribe() {
 	return use(SubscribeContext);
 }
 
-export default function ProviderSubscribe({ newsletter, readers, children }) {
+// labels and form: the subscribe box's words in the venue's language (lib/landing.js getLandingCopy).
+export default function ProviderSubscribe({ newsletter, readers, labels, form, children }) {
 	const [openedBy, setOpenedBy] = useState(null);
 	const value = useMemo(() => ({ open: (source = "reader") => setOpenedBy(source) }), []);
 
@@ -35,7 +36,7 @@ export default function ProviderSubscribe({ newsletter, readers, children }) {
 					onOpenAutoFocus={onOpenAutoFocus}
 					className="p-8 pt-10 sm:max-w-md"
 				>
-					<PitchSubscribe newsletter={newsletter} readers={readers} titleAs={DialogTitle} />
+					<PitchSubscribe newsletter={newsletter} readers={readers} labels={labels} form={form} titleAs={DialogTitle} />
 				</DialogContent>
 			</Dialog>
 		</SubscribeContext>

@@ -66,19 +66,14 @@ export default function FormLegal({ newsletter, siteUrl, notice }) {
 			</Section>
 			<Section title="What your forms say" stagger={2}>
 				<div className="flex flex-col gap-1.5 px-4 pb-4 text-xs text-pretty text-muted-foreground">
-					{notice.lines.map(([label, text]) => (
-						<p key={label}>
-							<span className="font-medium text-foreground">{label}:</span> {text}
-						</p>
-					))}
-					{notice.more && (
-						<p>
+					<p>
+						{notice.text}{" "}
+						{notice.more && (
 							<a href={notice.more.href} target="_blank" rel="noreferrer" className="underline underline-offset-2">
 								{notice.more.label}
 							</a>
-						</p>
-					)}
-					<p>{notice.age}</p>
+						)}
+					</p>
 					<p className="pt-2">Under your website&apos;s form, your popup and the forms on your site, in your guests&apos; language. Saved changes show after reloading.</p>
 				</div>
 			</Section>

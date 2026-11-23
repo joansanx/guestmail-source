@@ -18,10 +18,9 @@ export default async function LegalPage() {
 	const { account, selected } = await requireRole("admin");
 	if (!selected) redirect(ADD_NEWSLETTER_PATH);
 	const newsletter = await Newsletter.findOne(scoped(account, { _id: selected._id }))
-		.select({ name: 1, slug: 1, archiveHost: 1, postalAddress: 1, legal: 1, "agent.language": 1, "signupForm.offerText": 1, "signupForm.offerCode": 1 })
+		.select({ name: 1, slug: 1, archiveHost: 1, postalAddress: 1, legal: 1, "agent.language": 1 })
 		.lean();
 	const siteUrl = getArchiveUrls(newsletter).siteIndex.replace(/\/$/, "");
-	const hasOffer = Boolean(newsletter.signupForm?.offerText && newsletter.signupForm?.offerCode);
 
 	return (
 		<LayoutNarrow>
@@ -30,7 +29,7 @@ export default async function LegalPage() {
 				key={String(newsletter._id)}
 				newsletter={serialize(newsletter)}
 				siteUrl={siteUrl}
-				notice={getPrivacyNotice(newsletter, { siteUrl, hasOffer })}
+				notice={getPrivacyNotice(newsletter, { siteUrl })}
 			/>
 		</LayoutNarrow>
 	);
