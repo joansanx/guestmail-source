@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { draftFromTemplate } from "@/app/(app)/templates/actions";
-import GalleryDesigns from "@/components/GalleryDesigns";
+import GalleryDesigns, { EmailThumbnail } from "@/components/GalleryDesigns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
@@ -15,8 +15,9 @@ const LANGUAGES = { en: "English", es: "Español" };
 
 // guestmail: revenue templates (lib/campaign-templates.js). One click makes a draft with the venue's name and booking
 // link filled in; square brackets are what's left to fill. gallery: { designs, language }, the venue's designs with
-// photos (components/GalleryDesigns.jsx), which come first, or { error } when they couldn't be listed.
-export default function PanelTemplates({ newsletterId, templates, goals, defaultKind, defaultLanguage, gallery }) {
+// photos (components/GalleryDesigns.jsx), which come first, or { error } when they couldn't be listed. previews: each text
+// template's email in small, { [id]: { en, es } }, in the newsletter's theme.
+export default function PanelTemplates({ newsletterId, templates, previews, goals, defaultKind, defaultLanguage, gallery }) {
 	const router = useRouter();
 	const [kind, setKind] = useState(defaultKind);
 	const [language, setLanguage] = useState(defaultLanguage);
@@ -68,16 +69,19 @@ export default function PanelTemplates({ newsletterId, templates, goals, default
 					.map((template) => {
 						const text = template[language];
 						return (
-							<li key={template.id} className="flex flex-col gap-3 rounded-xl bg-card p-4 shadow-border">
-								<div className="flex items-start justify-between gap-2">
-									<p className="text-sm font-medium text-pretty">{text.title}</p>
-									<Badge variant="secondary">{goals[template.goal][language]}</Badge>
+							<li key={template.id} className="flex flex-col overflow-hidden rounded-xl bg-card shadow-border">
+								<EmailThumbnail title={text.title} html={previews[template.id][language]} />
+								<div className="flex flex-1 flex-col gap-3 p-4">
+									<div className="flex items-start justify-between gap-2">
+										<p className="text-sm font-medium text-pretty">{text.title}</p>
+										<Badge variant="secondary">{goals[template.goal][language]}</Badge>
+									</div>
+									<p className="text-xs text-muted-foreground">{text.when}</p>
+									<p className="flex-1 text-sm text-pretty text-muted-foreground">“{text.subject.replaceAll("{{venue}}", "…")}”</p>
+									<Button size="sm" variant="outline" className="self-start" disabled={pending !== null} onClick={() => use(template.id)}>
+										{pending === template.id && <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />} Use this template
+									</Button>
 								</div>
-								<p className="text-xs text-muted-foreground">{text.when}</p>
-								<p className="flex-1 text-sm text-pretty text-muted-foreground">“{text.subject.replaceAll("{{venue}}", "…")}”</p>
-								<Button size="sm" variant="outline" className="self-start" disabled={pending !== null} onClick={() => use(template.id)}>
-									{pending === template.id && <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />} Use this template
-								</Button>
 							</li>
 						);
 					})}
