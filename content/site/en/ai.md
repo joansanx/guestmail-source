@@ -6,7 +6,7 @@ description: "Where GuestMail uses AI, where it does not, what the content check
 slug: "ai"
 lang: en
 date: 2026-11-21
-updated: 2026-11-22
+updated: 2026-11-23
 status: published
 translationOf: "ai"
 ---
@@ -15,7 +15,7 @@ This page says plainly where GuestMail uses artificial intelligence, where it do
 
 ## Where GuestMail uses AI: the content check
 
-Before a campaign goes out, an automated check can read its subject, its sender name and its content to look for phishing, malware, scams and explicit content. The check runs on DeepSeek's models, reached through its API, with servers in China, a country without an adequacy decision of the European Commission. Email addresses and phone numbers in the text are replaced by placeholders before it leaves. The check never receives your contacts, any guest data or the names of your authors.
+Before a campaign goes out, an automated check can read its subject, its sender name and its content to look for phishing, malware, scams and explicit content. The check runs on Google's Gemini model, reached through OpenRouter, with servers in the United States. Email addresses and phone numbers in the text are replaced by placeholders before it leaves. The check never receives your contacts, any guest data or the names of your authors.
 
 The check does not refuse a campaign on its own. When one looks clearly harmful it waits, and a person at GuestMail decides whether it is sent as you wrote it. The check can be wrong in both directions. If you think it held a campaign by mistake, write to {{support_email}}.
 

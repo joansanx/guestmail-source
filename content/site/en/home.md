@@ -1,8 +1,10 @@
 ---
-# The landing page (components/marketing/PagesSite.jsx) reads this file in a fixed shape: two paragraphs (the lead and
-# the line about the price), then six sections in this order. The demo: one paragraph, then an h3 and one paragraph per
-# tab, in the order of DEMO_TABS (lib/marketing/landing-demo.js): ask, write, guests, reviews, automations, website.
-# What GuestMail gives: an h3 and one paragraph per card, in the order of FEATURE_VISUALS
+# The landing page (components/marketing/PagesSite.jsx) reads this file in a fixed shape: three paragraphs (the lead,
+# the line about the price and the line that leads to the demos), then eight sections in this order. The demo: one
+# paragraph, then an h3 and one paragraph per tab, in the order of DEMO_TABS (lib/marketing/landing-demo.js): ask, write,
+# guests, reviews, automations, website. The templates: one paragraph over the gallery, one under it. The demos: one
+# paragraph, then an h3 with each demo venue's name and one paragraph, in the order of DEMO_VENUES
+# (lib/marketing/landing-templates.js), which has their addresses. What GuestMail gives: an h3 and one paragraph per card, in the order of FEATURE_VISUALS
 # (components/marketing/DemoLanding.jsx): scheduling, popup, segments, imports, reservations, attributed bookings,
 # domain, deliverability, team. Agents: one paragraph, a list of "**Assistant** does one thing: `tool`", then the paragraphs
 # on. The plans: one paragraph, {{plans}}, the list of what every plan has. The last call: its paragraphs.
@@ -13,7 +15,7 @@ description: "GuestMail is email marketing for hotels and restaurants: a guest l
 slug: "home"
 lang: en
 date: 2026-11-21
-updated: 2026-11-22
+updated: 2026-11-23
 status: published
 translationOf: "home"
 faq:
@@ -36,6 +38,8 @@ faq:
 Ask your AI agent for a campaign: it reads your reviews, picks the guests and leaves a draft for you to approve. GuestMail is email marketing for hotels and restaurants, with a guest list that keeps every stay, automations and a website with your offer.
 
 From {{starter_price}} a month for {{starter_emails}} emails, billed every quarter. {{sales_note}}
+
+Try a demo that works: subscribe to Hotel Brisa Lenta or Tres Higueras, two made-up venues, and get their welcome email.
 
 ## GuestMail at work
 
@@ -64,6 +68,24 @@ Draw the path a guest takes: what starts it, like a signup, a tag, a click or a 
 ### Website
 
 Your venue gets its own website on GuestMail, with your offer, a signup form and a page for every campaign you send, which search engines can find. [Website, in the help center](/help/website)
+
+## GuestMail email templates for hotels and restaurants
+
+Pick a design and fill in your words. Each one opens in the editor as a draft, with photos you can swap.
+
+Hotel Brisa Lenta and Tres Higueras are made-up venues, there to show the templates, and their prices and dates are examples.
+
+## Try GuestMail as a guest
+
+Subscribe and you'll get their welcome email, like any guest who signs up on their website. They're made-up venues GuestMail uses as demos, and that email is the only one they send. The demos are in Spanish.
+
+### Hotel Brisa Lenta
+
+A hotel on the Mediterranean coast.
+
+### Tres Higueras
+
+A restaurant with seasonal cooking.
 
 ## What GuestMail gives a hotel or a restaurant
 

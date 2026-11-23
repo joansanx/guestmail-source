@@ -2,7 +2,7 @@ import { getArchiveAuthor } from "@/lib/archive-author";
 import { getArchiveNewsletter, listArchiveIssues } from "@/lib/archive-data";
 import { getArchiveUrls } from "@/lib/archive-hosts";
 import { getIssueDate } from "@/lib/archive-issues";
-import { isHomeIndexed } from "@/lib/archive-seo";
+import { isDemoVenue, isHomeIndexed } from "@/lib/archive-seo";
 
 export const revalidate = 3600;
 
@@ -28,8 +28,13 @@ export async function GET(_request, { params }) {
 		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
 		// guestmail: the home page is listed once search engines may index it.
 		...(isHomeIndexed(newsletter) ? [entry(urls.siteIndex, latestDate)] : []),
-		entry(urls.absoluteAuthor(getArchiveAuthor(newsletter).slug), latestDate),
-		...issues.map((issue) => entry(urls.absolutePost(issue.archiveSlug), issue.editedAt ?? getIssueDate(issue))),
+		// guestmail: a demo venue's pages are noindex, so none of them is listed.
+		...(isDemoVenue(newsletter)
+			? []
+			: [
+					entry(urls.absoluteAuthor(getArchiveAuthor(newsletter).slug), latestDate),
+					...issues.map((issue) => entry(urls.absolutePost(issue.archiveSlug), issue.editedAt ?? getIssueDate(issue))),
+				]),
 		"</urlset>",
 	].join("\n");
 

@@ -1,8 +1,10 @@
 ---
-# La portada (components/marketing/PagesSite.jsx) lee este fichero con una forma fija: dos párrafos (la entrada y la
-# línea del precio) y seis secciones en este orden. La demo: un párrafo y luego un h3 y un párrafo por pestaña, en el
-# orden de DEMO_TABS (lib/marketing/landing-demo.js): preguntar, escribir, huéspedes, reseñas, automatizaciones y web.
-# Qué da GuestMail: un h3 y un párrafo por tarjeta, en el orden de FEATURE_VISUALS (components/marketing/DemoLanding.jsx):
+# La portada (components/marketing/PagesSite.jsx) lee este fichero con una forma fija: tres párrafos (la entrada, la
+# línea del precio y la línea que lleva a las demos) y ocho secciones en este orden. La demo: un párrafo y luego un h3 y
+# un párrafo por pestaña, en el orden de DEMO_TABS (lib/marketing/landing-demo.js): preguntar, escribir, huéspedes,
+# reseñas, automatizaciones y web. Las plantillas: un párrafo sobre la galería y otro debajo. Las demos: un párrafo y
+# luego un h3 con el nombre de cada local de demo y un párrafo, en el orden de DEMO_VENUES
+# (lib/marketing/landing-templates.js), que guarda sus direcciones. Qué da GuestMail: un h3 y un párrafo por tarjeta, en el orden de FEATURE_VISUALS (components/marketing/DemoLanding.jsx):
 # programación, popup, segmentos, importación, reservas, reservas atribuidas, dominio, entregabilidad y equipo. Agentes: un
 # párrafo, una lista de "**Asistente** hace una cosa: `herramienta`" y los párrafos que siguen. Planes: un párrafo,
 # {{plans}} y la lista de lo que trae cada plan. El cierre: sus párrafos.
@@ -13,7 +15,7 @@ description: "GuestMail es email marketing para hoteles y restaurantes: lista de
 slug: "home"
 lang: es
 date: 2026-11-22
-updated: 2026-11-22
+updated: 2026-11-23
 status: published
 translationOf: "home"
 faq:
@@ -38,6 +40,8 @@ faq:
 Pídele una campaña a tu agente de IA: lee tus reseñas, elige a los huéspedes y te deja un borrador para que lo apruebes. GuestMail es email marketing para hoteles y restaurantes, con una lista de huéspedes que guarda cada estancia, automatizaciones y una web con tu oferta.
 
 Desde {{starter_price}} al mes por {{starter_emails}} emails, con cobro por trimestre. {{sales_note}}
+
+Prueba una demo que funciona: suscríbete al Hotel Brisa Lenta o a Tres Higueras, dos locales inventados, y recibe su correo de bienvenida.
 
 ## GuestMail en acción
 
@@ -66,6 +70,24 @@ Dibuja el camino de cada huésped: qué lo pone en marcha, como apuntarse, una e
 ### Web
 
 Tu establecimiento tiene su propia web en GuestMail, con tu oferta, un formulario de alta y una página por cada campaña que envías, que los buscadores pueden encontrar. [Web, en el centro de ayuda (en inglés)](/help/website)
+
+## Plantillas de correo de GuestMail para hoteles y restaurantes
+
+Elige un diseño y pon tus palabras. Cada uno se abre en el editor como un borrador, con fotos que puedes cambiar.
+
+El Hotel Brisa Lenta y Tres Higueras son locales inventados para enseñar las plantillas, y sus precios y fechas son de ejemplo.
+
+## Prueba GuestMail como huésped o como comensal
+
+Suscríbete y te llegará su correo de bienvenida, como a cualquiera que se apunte en su web. Son locales inventados que GuestMail usa como demo, y ese correo es el único que envían.
+
+### Hotel Brisa Lenta
+
+Un hotel en la costa mediterránea.
+
+### Tres Higueras
+
+Un restaurante de cocina de temporada.
 
 ## Qué le da GuestMail a un hotel o a un restaurante
 

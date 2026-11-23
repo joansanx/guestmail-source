@@ -7,7 +7,7 @@ description: "What personal data GuestMail handles and why, who helps process it
 slug: "privacy"
 lang: en
 date: 2026-11-21
-updated: 2026-11-22
+updated: 2026-11-23
 status: published
 translationOf: "privacy"
 ---
@@ -50,7 +50,7 @@ GuestMail sets its own cookies when you sign in and use the dashboard: one that 
 
 Some of these providers are outside the European Economic Area. Transfers to providers in the United States rely on the EU-US Data Privacy Framework or on the standard contractual clauses approved by the European Commission.
 
-DeepSeek is in China, a country without an adequacy decision of the European Commission. What goes to DeepSeek is kept to the text of your campaigns, with email addresses and phone numbers replaced by placeholders, and your brief, without contacts or author names.
+What goes to OpenRouter and to Google's Gemini model is kept to the text of your campaigns, with email addresses and phone numbers replaced by placeholders, and your brief, without contacts or author names. OpenRouter only sends it to providers that don't collect it to store it or to train their models.
 
 GuestMail does not sell personal data. The same list, with the notice you get before it changes, is on the [subprocessors](/subprocessors) page.
 

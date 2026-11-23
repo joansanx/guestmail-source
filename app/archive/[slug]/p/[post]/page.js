@@ -17,6 +17,7 @@ import { countReaders, getArchiveIssue, getArchiveNewsletter, listArchiveIssues 
 import { getArchiveUrls } from "@/lib/archive-hosts";
 import { getIssueDate } from "@/lib/archive-issues";
 import { getIssueSeo } from "@/lib/archive-seo";
+import { getLandingCopy } from "@/lib/landing";
 import { cn } from "@/lib/utils";
 
 export const revalidate = 3600;
@@ -51,6 +52,7 @@ export default async function IssuePage({ params }) {
 	const date = getIssueDate(issue);
 	const views = issue.webViews ?? 0;
 	const author = getArchiveAuthor(newsletter);
+	const landing = getLandingCopy(newsletter);
 	const pitch = {
 		name: newsletter.name,
 		slug: newsletter.slug,
@@ -73,7 +75,7 @@ export default async function IssuePage({ params }) {
 					<div className="mt-6 flex items-center justify-between gap-4">
 						<div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground tabular-nums">
 							{issue.author ? (
-								<BylineAuthor author={issue.author} />
+								<BylineAuthor author={issue.author} label={landing.labels.by} />
 							) : (
 								<a
 									href={urls.author(author.slug)}
@@ -88,7 +90,7 @@ export default async function IssuePage({ params }) {
 									<span className="truncate">{author.name}</span>
 								</a>
 							)}
-							{date && <BadgeDate date={date} />}
+							{date && <BadgeDate date={date} locale={landing.labels.locale} />}
 							{views > 0 && <BadgeViews views={views} />}
 						</div>
 						<LinksShare
@@ -112,19 +114,19 @@ export default async function IssuePage({ params }) {
 
 			<section id="subscribe" className={cn("mx-auto max-w-2xl scroll-mt-24 px-5 pt-16", more.length === 0 && "pb-24")}>
 				<div className="rounded-2xl bg-card px-6 py-10 shadow-border sm:px-10">
-					<PitchSubscribe newsletter={pitch} readers={readers} />
+					<PitchSubscribe newsletter={pitch} readers={readers} labels={landing.labels} form={landing.form} />
 				</div>
 			</section>
 
 			{more.length > 0 && (
 				<section className="mx-auto max-w-5xl px-5 pt-20 pb-24">
 					<div className="mb-6 flex items-baseline justify-between gap-4 border-b border-border/60 pb-4">
-						<h2 className="text-sm font-medium text-muted-foreground">Keep reading</h2>
+						<h2 className="text-sm font-medium text-muted-foreground">{landing.labels.keepReading}</h2>
 						<a
 							href={urls.index}
 							className="text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
 						>
-							All issues →
+							{landing.labels.allLink}
 						</a>
 					</div>
 					<ol className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">

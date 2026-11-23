@@ -128,7 +128,7 @@ export default async function ArchivePage({ params }) {
 
 			{latest && (
 				<section style={{ "--stagger": 5 }} className={cn("mx-auto max-w-5xl px-5 animate-enter", rest.length === 0 && "pb-24")}>
-					<h2 className="mb-4 text-sm font-medium text-muted-foreground">Latest issue</h2>
+					<h2 className="mb-4 text-sm font-medium text-muted-foreground">{landing.labels.latest}</h2>
 					<CardIssue
 						issue={latest}
 						newsletter={newsletter}
@@ -144,7 +144,7 @@ export default async function ArchivePage({ params }) {
 			{rest.length > 0 && (
 				<section className="mx-auto max-w-5xl px-5 pt-20 pb-24">
 					<h2 className="mb-6 border-b border-border/60 pb-4 text-sm font-medium text-muted-foreground">
-						All issues
+						{landing.labels.all}
 					</h2>
 					<ol className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
 						{rest.map((issue) => (

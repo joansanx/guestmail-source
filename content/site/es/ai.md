@@ -6,7 +6,7 @@ description: "Dónde usa GuestMail la IA, dónde no, qué envía a su modelo la 
 slug: "ai"
 lang: es
 date: 2026-11-22
-updated: 2026-11-22
+updated: 2026-11-23
 status: published
 translationOf: "ai"
 ---
@@ -15,7 +15,7 @@ Esta página dice con claridad dónde usa GuestMail la inteligencia artificial, 
 
 ## Dónde usa GuestMail la IA: la revisión de contenido
 
-Antes de que salga una campaña, una revisión automática puede leer su asunto, su nombre de remitente y su contenido para buscar phishing, malware, estafas y contenido explícito. La revisión funciona con los modelos de DeepSeek, a través de su API, con servidores en China, un país sin decisión de adecuación de la Comisión Europea. Los emails y los teléfonos que haya en el texto se sustituyen por marcas antes de que salga. La revisión nunca recibe tus contactos, ningún dato de huéspedes ni los nombres de tus autores.
+Antes de que salga una campaña, una revisión automática puede leer su asunto, su nombre de remitente y su contenido para buscar phishing, malware, estafas y contenido explícito. La revisión funciona con el modelo Gemini de Google, a través de OpenRouter, con servidores en Estados Unidos. Los emails y los teléfonos que haya en el texto se sustituyen por marcas antes de que salga. La revisión nunca recibe tus contactos, ningún dato de huéspedes ni los nombres de tus autores.
 
 La revisión no rechaza una campaña por sí sola. Cuando una parece claramente dañina se queda en espera, y una persona de GuestMail decide si se envía tal como la escribiste. La revisión puede equivocarse en los dos sentidos. Si crees que retuvo una campaña por error, escribe a {{support_email}}.
 

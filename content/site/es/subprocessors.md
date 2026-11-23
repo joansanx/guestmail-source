@@ -4,11 +4,11 @@
 # Para el abogado y para quien despliega: comprobar cada fila contra lo que corre en producción, y la región de Upstash.
 # La descripción no puede nombrar a un proveedor de email (tests/public-site.test.mjs): la tabla sí.
 title: "Subencargados del tratamiento"
-description: "Las empresas que ayudan a GuestMail a tratar datos personales, qué trata cada una y dónde, qué llega a un proveedor en China y cómo se avisan los cambios."
+description: "Las empresas que ayudan a GuestMail a tratar datos personales, qué trata cada una y dónde, qué llega al modelo de IA y cómo se avisan los cambios."
 slug: "subprocessors"
 lang: es
 date: 2026-11-22
-updated: 2026-11-22
+updated: 2026-11-23
 status: published
 translationOf: "subprocessors"
 ---
@@ -23,7 +23,7 @@ Los subencargados de GuestMail son las empresas que tratan datos personales por 
 
 Las transferencias a proveedores de Estados Unidos se apoyan en el Marco de Privacidad de Datos UE-EE. UU. o en las cláusulas contractuales tipo aprobadas por la Comisión Europea.
 
-DeepSeek está en China, un país sin decisión de adecuación de la Comisión Europea. GuestMail lo dice aquí en lugar de callarlo. Lo que llega a DeepSeek es el asunto, el nombre del remitente y el texto de tus campañas, y tu brief. Los emails y los teléfonos que haya en el texto de una campaña se sustituyen por marcas antes de que salga. DeepSeek nunca recibe tus contactos, ningún dato de huéspedes ni los nombres de tus autores.
+La revisión automática y el agente de contenido usan el modelo Gemini de Google a través de OpenRouter. Lo que les llega es el asunto, el nombre del remitente y el texto de tus campañas, y tu brief. Los emails y los teléfonos que haya en el texto de una campaña se sustituyen por marcas antes de que salga. OpenRouter solo lo envía a proveedores que no recogen esos datos para guardarlos ni para entrenar sus modelos. Ninguno de los dos recibe tus contactos, ningún dato de huéspedes ni los nombres de tus autores.
 
 ## Qué no recibe ningún subencargado de GuestMail
 

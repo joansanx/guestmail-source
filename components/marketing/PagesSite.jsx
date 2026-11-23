@@ -8,15 +8,18 @@ import {
 	SectionAgents,
 	SectionClosing,
 	SectionDemo,
+	SectionDemos,
 	SectionFaq,
 	SectionFeatures,
 	SectionHero,
 	SectionPricing,
+	SectionTemplates,
 	SectionText,
 } from "@/components/marketing/SectionsLanding";
 import { isCloud } from "@/lib/config";
 import { getPage, getPost, listPosts } from "@/lib/marketing/content";
 import { DEMO_TABS } from "@/lib/marketing/landing-demo";
+import { DEMO_VENUES } from "@/lib/marketing/landing-templates";
 import { formatDay, getContentMetadata, getStructuredData, readPage, readPost, readSections, toHtml } from "@/lib/marketing/content-render";
 import { BLOG_SLUG, LEGAL_SLUGS, STRINGS, getFeedPath, getPagePath } from "@/lib/marketing/site-pages";
 import { cn } from "@/lib/utils";
@@ -32,37 +35,44 @@ export function getSiteMetadata(lang, slug) {
 	return getContentMetadata(getPage(lang, slug));
 }
 
-// The landing page reads its file as a lead and a line about the price, then six sections in this order: the demo (a
-// paragraph, then an h3 and a paragraph per tab, in DEMO_TABS' order), what GuestMail gives (an h3 and a paragraph per
-// card, in FEATURE_VISUALS' order), agents (a paragraph, a list of an assistant doing one thing each, the paragraphs
-// on), the plans (a paragraph, the list of what every plan has) and the last call (its paragraphs). A file in another
-// shape stops the build here.
+// The landing page reads its file as a lead, a line about the price and a line that leads to the demos, then eight
+// sections in this order: the demo (a paragraph, then an h3 and a paragraph per tab, in DEMO_TABS' order), the templates
+// (a paragraph over the gallery, one under it), the demos (a paragraph, then an h3 named as each venue of DEMO_VENUES
+// and a paragraph, in its order), what GuestMail gives (an h3 and a paragraph per card, in FEATURE_VISUALS' order),
+// agents (a paragraph, a list of an assistant doing one thing each, the paragraphs on), the plans (a paragraph, the list
+// of what every plan has) and the last call (its paragraphs). A file in another shape stops the build here.
 export function PageLanding({ lang }) {
 	requireCloud();
 	const doc = readPage(lang, "home");
 	const strings = STRINGS[lang];
-	const [intro, demo, features, agents, pricing, closing, ...more] = readSections(doc);
+	const [intro, demo, templates, demos, features, agents, pricing, closing, ...more] = readSections(doc);
 	const isShaped =
 		closing &&
 		more.length === 0 &&
-		intro.paragraphs.length === 2 &&
+		intro.paragraphs.length === 3 &&
 		demo.paragraphs.length === 1 &&
 		demo.items.length === DEMO_TABS.length &&
+		templates.paragraphs.length === 2 &&
+		templates.items.length === 0 &&
+		demos.paragraphs.length === 1 &&
+		demos.items.map(({ title }) => title).join() === DEMO_VENUES.map(({ name }) => name).join() &&
 		features.items.length === FEATURE_VISUALS.length &&
 		agents.list.length > 0 &&
 		pricing.list.length > 0 &&
 		closing.paragraphs.length > 0;
 	if (!isShaped) throw new Error(`content/site/${lang}/home.md isn't in the shape the landing page reads (components/marketing/PagesSite.jsx)`);
-	const [lead, price] = intro.paragraphs;
+	const [lead, price, strip] = intro.paragraphs;
 	const pricingHref = getPagePath(lang, "pricing");
 	return (
-		<main lang={lang} className="flex flex-col gap-20 py-14 sm:gap-24 sm:py-20">
-			<SectionHero title={doc.title} lead={lead} price={price} strings={strings} pricingHref={pricingHref} />
+		<main lang={lang} className="flex flex-col gap-20 pb-14 sm:gap-24 sm:pb-20">
+			<SectionHero title={doc.title} lead={lead} price={price} strip={strip} strings={strings} />
 			<SectionDemo section={demo} strings={strings} lang={lang} />
+			<SectionTemplates section={templates} strings={strings} lang={lang} />
+			<SectionDemos section={demos} strings={strings} lang={lang} />
 			<SectionFeatures section={features} strings={strings} lang={lang} />
 			<SectionAgents section={agents} />
-			<SectionPricing section={pricing} strings={strings} lang={lang} />
-			<SectionFaq faq={doc.faq} strings={strings} />
+			<SectionPricing section={pricing} strings={strings} lang={lang} isCentered />
+			<SectionFaq faq={doc.faq} strings={strings} isCentered />
 			<SectionClosing section={closing} strings={strings} pricingHref={pricingHref} />
 			<ScriptJsonLd data={getStructuredData(doc)} />
 		</main>

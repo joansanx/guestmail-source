@@ -4,11 +4,11 @@
 # For the lawyer and for whoever deploys: check each row against what production runs, and Upstash's region.
 # The description must not name an email provider (tests/public-site.test.mjs): the table does.
 title: "Subprocessors"
-description: "The companies that help GuestMail process personal data, what each one handles and where, with what goes to a provider in China and how changes are told."
+description: "The companies that help GuestMail process personal data, what each one handles and where, with what goes to the AI model and how changes are told."
 slug: "subprocessors"
 lang: en
 date: 2026-11-22
-updated: 2026-11-22
+updated: 2026-11-23
 status: published
 translationOf: "subprocessors"
 ---
@@ -23,7 +23,7 @@ GuestMail's subprocessors are the companies that handle personal data for it: ho
 
 Transfers to providers in the United States rely on the EU-US Data Privacy Framework or on the standard contractual clauses approved by the European Commission.
 
-DeepSeek is in China, a country without an adequacy decision of the European Commission. GuestMail says so here instead of leaving it out. What goes to DeepSeek is the subject, the sender name and the text of your campaigns, and your brief. Email addresses and phone numbers in a campaign's text are replaced by placeholders before it leaves. DeepSeek never receives your contacts, any guest data or the names of your authors.
+The automated check and the content agent use Google's Gemini model through OpenRouter. What reaches them is the subject, the sender name and the text of your campaigns, and your brief. Email addresses and phone numbers in a campaign's text are replaced by placeholders before it leaves. OpenRouter only sends it to providers that don't collect it to store it or to train their models. Neither receives your contacts, any guest data or the names of your authors.
 
 ## What no GuestMail subprocessor receives
 

@@ -2,6 +2,7 @@ import Image from "next/image";
 import BadgeDate from "@/components/BadgeDate";
 import BadgeViews from "@/components/BadgeViews";
 import { getIssueDate } from "@/lib/archive-issues";
+import { getSiteLabels } from "@/lib/landing";
 import { getShareCardUrl } from "@/lib/archive-seo";
 import { isOptimizableImage } from "@/lib/thumbnail";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,7 @@ export default function CardIssue({ issue, newsletter, href, isFeatured = false,
 				isEager={isEager}
 			/>
 			<div className="flex flex-col gap-2">
-				<MetaIssue issue={issue} />
+				<MetaIssue issue={issue} locale={getSiteLabels(newsletter).locale} />
 				<h3
 					className={cn(
 						"font-theme-heading text-balance decoration-foreground/30 underline-offset-4 group-hover:underline",
@@ -77,13 +78,13 @@ function ImageIssue({ issue, newsletter, sizes, isEager }) {
 	);
 }
 
-function MetaIssue({ issue }) {
+function MetaIssue({ issue, locale }) {
 	const date = getIssueDate(issue);
 	const views = issue.webViews ?? 0;
 
 	return (
 		<p className="flex items-center gap-3 text-sm text-muted-foreground tabular-nums">
-			{date && <BadgeDate date={date} />}
+			{date && <BadgeDate date={date} locale={locale} />}
 			{views > 0 && <BadgeViews views={views} isCompact />}
 		</p>
 	);
