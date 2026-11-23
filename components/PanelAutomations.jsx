@@ -5,9 +5,11 @@ import { CakeSlice, CalendarClock, HeartHandshake, Loader2, LogOut, Pencil, Tria
 import { editHotelAutomation, switchHotelAutomation } from "@/app/(app)/automations/actions";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { TONES } from "@/lib/automation-tones";
 import { toast } from "@/lib/toast";
 
 const ICONS = { pre_arrival: CalendarClock, post_stay: LogOut, birthday: CakeSlice, win_back: HeartHandshake };
+const KIND_TONES = { pre_arrival: TONES.email, post_stay: TONES.yes, birthday: TONES.pink, win_back: TONES.wait };
 
 // guestmail: the hotel's automatic emails (lib/actions/automations.js). Each card: who gets it, its email to edit, and
 // its switch, which stays off while the email has a [square bracket] to fill in.
@@ -58,7 +60,7 @@ function CardAutomation({ newsletterId, automation, stagger }) {
 	return (
 		<section style={{ "--stagger": stagger }} className="rounded-xl bg-card shadow-border animate-enter">
 			<div className="flex items-start gap-3 p-4">
-				<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
+				<span className={`grid size-9 shrink-0 place-items-center rounded-xl ${KIND_TONES[state.kind].tile}`}>
 					<Icon className="size-4" aria-hidden="true" />
 				</span>
 				<div className="min-w-0 flex-1">

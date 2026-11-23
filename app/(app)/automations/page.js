@@ -8,6 +8,7 @@ import PanelAutomations from "@/components/PanelAutomations";
 import StateEmpty from "@/components/StateEmpty";
 import TextTrigger from "@/components/TextTrigger";
 import { runDashboardAction } from "@/lib/actions/dashboard";
+import { TONES, TRIGGER_ICONS } from "@/lib/automation-tones";
 import { formatNumber } from "@/lib/format";
 import { ADD_NEWSLETTER_PATH } from "@/lib/newsletters";
 import { requireRole } from "@/lib/selected-newsletter";
@@ -68,13 +69,14 @@ export default async function AutomationsPage() {
 
 function RowAutomation({ automation }) {
 	const { people } = automation;
+	const Icon = TRIGGER_ICONS[automation.trigger.type] ?? Zap;
 	return (
 		<Link
 			href={`/automations/${automation.id}`}
 			className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-border transition-colors duration-150 hover:bg-muted/50"
 		>
-			<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
-				<Zap className="size-4" aria-hidden="true" />
+			<span className={`grid size-9 shrink-0 place-items-center rounded-xl ${TONES.trigger.tile}`}>
+				<Icon className="size-4" aria-hidden="true" />
 			</span>
 			<span className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<span className="flex min-w-0 items-center gap-2">

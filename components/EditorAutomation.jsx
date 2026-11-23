@@ -16,8 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { BRANCHES, MAX_STEPS, MAX_WAIT, checkSteps, getLane, getStepsBefore, getStepsUnder } from "@/lib/automation-rules";
+import { TONES } from "@/lib/automation-tones";
 import { formatNumber } from "@/lib/format";
 import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 
 // guestmail: one automation (lib/actions/automations.js). The trigger on top, then its path down the page: a + between
 // steps adds an email, a wait or a condition, and a condition opens its Yes and No side by side (one under the other on a
@@ -233,11 +235,11 @@ export default function EditorAutomation({ automation, segments, campaigns, tags
 	);
 }
 
-function Card({ icon: Icon, title, menu, children, footer }) {
+function Card({ icon: Icon, tone, title, menu, children, footer }) {
 	return (
-		<div className="w-full max-w-md rounded-xl bg-card shadow-border">
-			<div className="flex items-center gap-2.5 px-3 pt-3">
-				<span className="grid size-7 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
+		<div className="w-full max-w-md overflow-hidden rounded-xl bg-card shadow-border">
+			<div className={cn("flex items-center gap-2.5 border-b border-border/60 px-3 py-2.5", TONES[tone].head)}>
+				<span className={cn("grid size-7 shrink-0 place-items-center rounded-lg", TONES[tone].tile)}>
 					<Icon className="size-3.5" aria-hidden="true" />
 				</span>
 				<span className="min-w-0 flex-1 truncate text-sm font-semibold">{title}</span>
@@ -260,7 +262,7 @@ const TRIGGER_OPTIONS = [
 function CardTrigger({ name, onName, trigger, onTrigger, campaigns, tags, isVenue }) {
 	const options = TRIGGER_OPTIONS.filter(({ value }) => value !== "booking" || isVenue || trigger.type === "booking");
 	return (
-		<Card icon={Zap} title="Trigger" footer="Each person goes along it once. You can also add anyone by hand from their page.">
+		<Card icon={Zap} tone="trigger" title="Trigger" footer="Each person goes along it once. You can also add anyone by hand from their page.">
 			<Input value={name} onChange={(event) => onName(event.target.value)} maxLength={100} aria-label="Name" placeholder="Name" data-no-translate />
 			<Select value={trigger.type} onValueChange={(type) => onTrigger({ type })}>
 				<SelectTrigger aria-label="Trigger" className="w-full bg-background">
@@ -319,7 +321,7 @@ function Lane({ editor, parent, branch }) {
 						<div className="mt-1 grid w-full grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
 							{BRANCHES.map((side) => (
 								<div key={side} className="flex min-w-0 flex-col items-center">
-									<span className="mt-3 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">{side === "yes" ? "Yes" : "No"}</span>
+									<span className={cn("mt-3 rounded-full px-2.5 py-0.5 text-xs font-semibold", TONES[side].tile)}>{side === "yes" ? "Yes" : "No"}</span>
 									<Lane editor={editor} parent={step.id} branch={side} />
 								</div>
 							))}
@@ -345,15 +347,15 @@ function ButtonAddStep({ editor, place }) {
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="center">
 					<DropdownMenuItem onSelect={() => editor.insert(place, "email")}>
-						<Mail aria-hidden="true" />
+						<Mail className={TONES.email.icon} aria-hidden="true" />
 						Email
 					</DropdownMenuItem>
 					<DropdownMenuItem onSelect={() => editor.insert(place, "wait")}>
-						<Clock aria-hidden="true" />
+						<Clock className={TONES.wait.icon} aria-hidden="true" />
 						Wait
 					</DropdownMenuItem>
 					<DropdownMenuItem onSelect={() => editor.insert(place, "condition")}>
-						<Split aria-hidden="true" />
+						<Split className={TONES.condition.icon} aria-hidden="true" />
 						Condition
 					</DropdownMenuItem>
 				</DropdownMenuContent>
@@ -408,6 +410,7 @@ function CardStep({ editor, step, index, lane }) {
 		return (
 			<Card
 				icon={Icon}
+				tone="email"
 				title={<span data-no-translate={saved ? "" : undefined}>{emailName(editor, step.id)}</span>}
 				menu={menu}
 				footer={
@@ -437,7 +440,7 @@ function CardStep({ editor, step, index, lane }) {
 
 	if (step.type === "wait") {
 		return (
-			<Card icon={Icon} title="Wait" menu={menu} footer={stats?.here > 0 && `${formatNumber(stats.here)} waiting`}>
+			<Card icon={Icon} tone="wait" title="Wait" menu={menu} footer={stats?.here > 0 && `${formatNumber(stats.here)} waiting`}>
 				<div className="flex gap-2">
 					<Input
 						type="number"
@@ -464,7 +467,7 @@ function CardStep({ editor, step, index, lane }) {
 
 	const emails = getStepsBefore(editor.steps, step).filter(({ type }) => type === "email");
 	return (
-		<Card icon={Icon} title="Condition" menu={menu} footer={stats && `${formatNumber(stats.yes)} went down Yes · ${formatNumber(stats.no)} down No`}>
+		<Card icon={Icon} tone="condition" title="Condition" menu={menu} footer={stats && `${formatNumber(stats.yes)} went down Yes · ${formatNumber(stats.no)} down No`}>
 			<Select value={step.check} onValueChange={(check) => editor.change(step, { check, ...(check === "opened" || check === "clicked" ? { email: emails.at(-1)?.id ?? "" } : {}) })}>
 				<SelectTrigger aria-label="Condition" className="w-full bg-background">
 					<SelectValue />
